@@ -74,7 +74,7 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>build\bin\$(Platform)_$(Configuration)\</OutDir>
     <IntDir>build\obj\$(Platform)_$(Configuration)\</IntDir>
-    <TargetName>$(ProjectName)-x86</TargetName>
+    <TargetName>$(ProjectName)-x86(Debug)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -86,7 +86,7 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>build\bin\$(Platform)_$(Configuration)\</OutDir>
     <IntDir>build\obj\$(Platform)_$(Configuration)\</IntDir>
-    <TargetName>$(ProjectName)-x86_64</TargetName>
+    <TargetName>$(ProjectName)-x86_64(Debug)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>

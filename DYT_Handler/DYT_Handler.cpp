@@ -8,6 +8,7 @@
 
 #include <string>
 
+
 /// <summary>
 /// 
 /// </summary>
@@ -41,7 +42,7 @@ BOOL IsCorrectTargetArchitecture(HANDLE hProc) {
     return (bTarget == bHost);
 }
 
-DWORD GetProcessIdByName(const wchar_t* name) {
+DWORD GetProcessIdByName(LPCTSTR name) {
     PROCESSENTRY32 entry;
     entry.dwSize = sizeof(PROCESSENTRY32);
 
@@ -49,7 +50,7 @@ DWORD GetProcessIdByName(const wchar_t* name) {
 
     if (Process32First(snapshot, &entry) == TRUE) {
         while (Process32Next(snapshot, &entry) == TRUE) {
-            if (_wcsicmp(entry.szExeFile, name) == 0) {
+            if (lstrcmpi(entry.szExeFile, name) == 0) {
                 CloseHandle(snapshot); //thanks to Pvt Comfy
                 return entry.th32ProcessID;
             }
@@ -60,18 +61,15 @@ DWORD GetProcessIdByName(const wchar_t* name) {
     return 0;
 }
 
-std::string GetProcessNameByIdA(DWORD processId) {
+bool GetProcessNameById(DWORD processId, LPTSTR buffer, DWORD size) {
     HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, processId);
     if (hProcess == NULL) {
-        return "";
+        return false;
     }
-    char processName[MAX_PATH];
-    if (GetModuleBaseNameA(hProcess, NULL, processName, sizeof(processName) / sizeof(char)) == 0) {
-        CloseHandle(hProcess);
-        return "";
-    }
+
+    bool success = GetModuleBaseName(hProcess, NULL, buffer, size) != 0;
     CloseHandle(hProcess);
-    return std::string(processName);
+    return success;
 }
 
 bool IsModuleLoaded(DWORD processId, const wchar_t* moduleName) {
@@ -104,17 +102,19 @@ bool IsModuleLoaded(DWORD processId, const wchar_t* moduleName) {
 /// 
 /// </summary>
 /// <param name="processName">Module name like "cs2.exe".</param>
-/// <returns>0 - Unknown, 1 - Ready, 2, Not yet.</returns>
+/// <returns>0 - Unknown, 1 - Ready, 2, Not yet, -1 - Process not found.</returns>
 int IsAppReady(DWORD processId) {
-    auto processName = GetProcessNameByIdA(processId);
+    TCHAR processName[MAX_PATH];
+    if (!GetProcessNameById(processId, processName, MAX_PATH))
+        return -1;
 
-    if (processName == "cs2.exe")
+    if (lstrcmp(processName, TEXT("cs2.exe")) == 0)
     {
         // Updated on 6-12-2025
         const wchar_t* requiredModules[] = {
-            L"matchmaking.dll",
-            L"navsystem.dll",
-            L"client.dll"
+            TEXT("matchmaking.dll"),
+            TEXT("navsystem.dll"),
+            TEXT("client.dll")
         };
 
         for (const auto& module : requiredModules) {
@@ -123,34 +123,42 @@ int IsAppReady(DWORD processId) {
             }
         }
 
+        printf("\nCS2 will be ready in a few seconds...\n");
+        Sleep(1000 * 7.7); // A lucky guess, CS2 takes a while to finish window initialization.
+
         return 1;
     }
 
     return 0;
 }
 
-void AnimateWait(int maxPoints = 5) {
-    static int pointCharsPut = 0;
-    while (true) {
-        if (pointCharsPut >= maxPoints) {
-            printf("\033[%dD", pointCharsPut);
-            printf("\033[0K");
-            fflush(stdout);
-            pointCharsPut = 0;
-        }
-        else
-        {
-            putchar('.');
-            pointCharsPut++;
-        }
-        Sleep(500);
+void AnimateWait(int maxPoints = 5, int delay = 500) {
+    static int pointsPut = 0;
+
+    if (maxPoints == 0) {
+        pointsPut = 0;
+        return;
     }
+
+    if (pointsPut >= maxPoints) {
+        printf("\033[%dD", pointsPut);
+        printf("\033[0K");
+        fflush(stdout);
+        pointsPut = 0;
+    }
+    else
+    {
+        putchar('.');
+        pointsPut++;
+    }
+    Sleep(delay);
+}
+void AnimateWaitReset() {
+    AnimateWait(0);
 }
 
 int wmain(int argc, wchar_t* argv[], wchar_t* envp[]) {
-start:
-    DWORD PID = 0;
-
+start_get_proc_name:
     std::string pname = "";
     printf("Process Name: ");
     std::getline(std::cin, pname);
@@ -159,13 +167,18 @@ start:
     wchar_t* vOut = new wchar_t[strlen(vIn) + 1];
     mbstowcs_s(NULL, vOut, strlen(vIn) + 1, vIn, strlen(vIn));
 
-start_get_pid:
-    printf("Trying to get process.");
     //_wsystem((L"start " + std::wstring(vOut)).c_str());
+
+start_get_pid:
+    DWORD PID = 0;
+    printf("Trying to get process.");
+    AnimateWaitReset();
     while (true) {
         PID = GetProcessIdByName(vOut);
-        if (PID)
+        if (PID) {
+            putchar('\n');
             break;
+        }
 
         AnimateWait();
         Sleep(250);
@@ -173,11 +186,29 @@ start_get_pid:
 
     printf("Process pid: %d\n", PID);
 
-    printf("Waiting for process to be ready.\n");
-    int pointCharsPut = 0;
-    while (IsAppReady(PID) == 2)
+    printf("Waiting for process to be ready.");
+    AnimateWaitReset();
+    for (int isAppReady = 2; ; isAppReady = IsAppReady(PID))
     {
-        AnimateWait();
+        if (isAppReady == 1) { // Ready
+            putchar('\n');
+            break;
+        }
+        if (isAppReady == 2) { // Not yet ready
+            AnimateWait();
+        }
+        else
+        {
+            if (isAppReady == -1) { // Pid is not valid
+                printf("Process is not valid anymore, retrying...\n");
+                goto start_get_pid;
+            }
+            if (isAppReady == 0) { // Unknwon process
+                putchar('\n');
+                break;
+            }
+        }
+
         Sleep(250);
     }
 

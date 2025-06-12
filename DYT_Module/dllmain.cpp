@@ -41,14 +41,14 @@ HMODULE g_hModule = NULL;
 WNDPROC originalWndProc = NULL;
 HWND targetHwnd = NULL;
 
-bool g_UserAction = false;
+bool g_Disabled = false;
 
 void Unload();
 
 std::tstring GetProcessName(DWORD processID) {
     HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, processID);
     if (hProcess != NULL) {
-        wchar_t filename[MAX_PATH];
+        TCHAR filename[MAX_PATH];
         if (GetModuleFileNameEx(hProcess, NULL, filename, MAX_PATH)) {
             CloseHandle(hProcess);
             std::tstring fullPath(filename);
@@ -87,23 +87,24 @@ LRESULT CALLBACK HookedWndProc(
     wsprintf(msg_info, TEXT("HWnd: 0x%p, MsgId: %X, wp: %u, lp: %u\n"), hwnd, uMsg, wParam, lParam);
     DBG_OUTSTR(msg_info);
 
-    if (uMsg == WM_KEYDOWN && wParam == VK_INSERT) {
-        Unload(); // Unload DYT
-        return 0;
-    }
+    // Unload disabled beacause module is going to be manual mapped by DYT_Handler
+    //if (uMsg == WM_KEYDOWN && wParam == VK_INSERT ) {
+    //    Unload(); // Unload DYT
+    //    return 0;
+    //}
 
     // Alt + Tab or other user actions
     if (uMsg == WM_SYSCOMMAND || (uMsg >= WM_KEYFIRST && uMsg <= WM_KEYLAST)) {
         DBG_OUTSTR(TEXT("用户正在使用窗口管理器切换窗口，暂停拦截\n"));
-        g_UserAction = true;
+        g_Disabled = true;
     }
     // Window activated
     if (uMsg == WM_ACTIVATE && wParam != WA_INACTIVE)
     {
-        g_UserAction = false;
+        g_Disabled = false;
     }
 
-    if (g_UserAction) {
+    if (g_Disabled) {
         return CallWindowProc(originalWndProc, hwnd, uMsg, wParam, lParam);
     }
 
