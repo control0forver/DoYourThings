@@ -124,7 +124,7 @@ int IsAppReady(DWORD processId) {
         }
 
         printf("\nCS2 will be ready in a few seconds...\n");
-        Sleep(1000 * 7.7); // A lucky guess, CS2 takes a while to finish window initialization.
+        Sleep(7777 * 1.35); // A lucky guess, CS2 takes a while to finish window initialization. (This may be slower on HDDs or slower systems)
 
         return 1;
     }

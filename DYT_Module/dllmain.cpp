@@ -93,9 +93,17 @@ LRESULT CALLBACK HookedWndProc(
     //    return 0;
     //}
 
+    /*if (uMsg == WM_SYSCOMMAND && wParam == SC_KEYMENU) {
+        DBG_OUTSTR(TEXT("用户正在管理窗口，暂停拦截\n"));
+        g_Disabled = true;
+    }*/
     // Alt + Tab or other user actions
-    if (uMsg == WM_SYSCOMMAND || (uMsg >= WM_KEYFIRST && uMsg <= WM_KEYLAST)) {
-        DBG_OUTSTR(TEXT("用户正在使用窗口管理器切换窗口，暂停拦截\n"));
+    if (
+        (uMsg == WM_KEYDOWN && wParam == VK_TAB && (GetAsyncKeyState(VK_MENU) & 0x8000))||
+        (uMsg == WM_SYSKEYDOWN && wParam == VK_TAB)||
+        (GetAsyncKeyState(VK_MENU) & 0x8000) && (GetAsyncKeyState(VK_TAB) & 0x8000)
+        ) {
+        DBG_OUTSTR(TEXT("用户正在使用组合键Alt+Tab，暂停拦截\n"));
         g_Disabled = true;
     }
     // Window activated
