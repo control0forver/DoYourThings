@@ -92,9 +92,11 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;DYTMODULE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <ExceptionHandling>false</ExceptionHandling>
+      <AdditionalOptions>/Zc:threadSafeInit %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -103,8 +105,7 @@
     </Link>
     <PostBuildEvent>
       <Message>Give library file to Handler project</Message>
-      <Command>mkdir "..\DYT_Handler\build\tmp\"
-copy "$(TargetPath)" "..\DYT_Handler\build\tmp\"</Command>
+      <Command>"$(SolutionDir)Tools\bin2c.exe" "$(TargetPath)" "$(SolutionDir)DYT_Handler\DYT_Module_dll.h" DYT_Module_dll</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -115,9 +116,11 @@ copy "$(TargetPath)" "..\DYT_Handler\build\tmp\"</Command>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;DYTMODULE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <ExceptionHandling>false</ExceptionHandling>
+      <AdditionalOptions>/Zc:threadSafeInit %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -126,8 +129,7 @@ copy "$(TargetPath)" "..\DYT_Handler\build\tmp\"</Command>
     </Link>
     <PostBuildEvent>
       <Message>Give library file to Handler project</Message>
-      <Command>mkdir "..\DYT_Handler\build\tmp\"
-copy "$(TargetPath)" "..\DYT_Handler\build\tmp\"</Command>
+      <Command>"$(SolutionDir)Tools\bin2c.exe" "$(TargetPath)" "$(SolutionDir)DYT_Handler\DYT_Module_dll.h" DYT_Module_dll</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -136,9 +138,11 @@ copy "$(TargetPath)" "..\DYT_Handler\build\tmp\"</Command>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;DYTMODULE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <ExceptionHandling>false</ExceptionHandling>
+      <AdditionalOptions>/Zc:threadSafeInit %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -147,8 +151,7 @@ copy "$(TargetPath)" "..\DYT_Handler\build\tmp\"</Command>
     </Link>
     <PostBuildEvent>
       <Message>Give library file to Handler project</Message>
-      <Command>mkdir "..\DYT_Handler\build\tmp\"
-copy "$(TargetPath)" "..\DYT_Handler\build\tmp\"</Command>
+      <Command>"$(SolutionDir)Tools\bin2c.exe" "$(TargetPath)" "$(SolutionDir)DYT_Handler\DYT_Module_dll.h" DYT_Module_dll</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -159,9 +162,11 @@ copy "$(TargetPath)" "..\DYT_Handler\build\tmp\"</Command>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;DYTMODULE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <ExceptionHandling>false</ExceptionHandling>
+      <AdditionalOptions>/Zc:threadSafeInit %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -170,22 +175,11 @@ copy "$(TargetPath)" "..\DYT_Handler\build\tmp\"</Command>
     </Link>
     <PostBuildEvent>
       <Message>Give library file to Handler project</Message>
-      <Command>mkdir "..\DYT_Handler\build\tmp\"
-copy "$(TargetPath)" "..\DYT_Handler\build\tmp\"</Command>
+      <Command>"$(SolutionDir)Tools\bin2c.exe" "$(TargetPath)" "$(SolutionDir)DYT_Handler\DYT_Module_dll.h" DYT_Module_dll</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="framework.h" />
-    <ClInclude Include="pch.h" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

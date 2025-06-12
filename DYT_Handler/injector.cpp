@@ -12,7 +12,7 @@
 #define CURRENT_ARCH IMAGE_FILE_MACHINE_I386
 #endif
 
-bool ManualMapDll(HANDLE hProc, BYTE* pSrcData, SIZE_T FileSize, bool ClearHeader, bool ClearNonNeededSections, bool AdjustProtections, bool SEHExceptionSupport, DWORD fdwReason, LPVOID lpReserved) {
+bool ManualMapDll(HANDLE hProc, BYTE* pSrcData, SIZE_T FileSize, bool ClearHeader, bool ClearNonNeededSections, bool AdjustProtections, bool SEHExceptionSupport, DWORD fdwReason, LPVOID lpReserved, DWORD fdwPrevReason, LPVOID lpPrevReserved) {
 	IMAGE_NT_HEADERS* pOldNtHeader = nullptr;
 	IMAGE_OPTIONAL_HEADER* pOldOptHeader = nullptr;
 	IMAGE_FILE_HEADER* pOldFileHeader = nullptr;
@@ -54,6 +54,8 @@ bool ManualMapDll(HANDLE hProc, BYTE* pSrcData, SIZE_T FileSize, bool ClearHeade
 	data.pbase = pTargetBase;
 	data.fdwReasonParam = fdwReason;
 	data.reservedParam = lpReserved;
+	data.fdwPrevReasonParam = fdwPrevReason;
+	data.prevReservedParam = lpPrevReserved;
 	data.SEHSupport = SEHExceptionSupport;
 
 
@@ -324,6 +326,7 @@ void __stdcall Shellcode(MANUAL_MAPPING_DATA* pData) {
 
 #endif
 
+	_DllMain(pBase, pData->fdwPrevReasonParam, pData->prevReservedParam);
 	_DllMain(pBase, pData->fdwReasonParam, pData->reservedParam);
 
 	if (ExceptionSupportFailed)

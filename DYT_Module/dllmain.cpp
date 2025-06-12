@@ -1,11 +1,10 @@
-﻿#include "pch.h"
-
-#include <Windows.h>
+﻿#include <Windows.h>
 #include <Psapi.h>
 #include <TlHelp32.h>
 
 #include <string>
 #include <iostream>
+#include <filesystem>
 
 #define GWL_WNDPROC (-4)
 
@@ -37,6 +36,7 @@ namespace std {
 #define DBG_BREAK NOP_FUNCTION
 #endif
 
+DWORD g_pid = NULL;
 HMODULE g_hModule = NULL;
 WNDPROC originalWndProc = NULL;
 HWND targetHwnd = NULL;
@@ -92,10 +92,12 @@ LRESULT CALLBACK HookedWndProc(
         return 0;
     }
 
+    // Alt + Tab or other user actions
     if (uMsg == WM_SYSCOMMAND || (uMsg >= WM_KEYFIRST && uMsg <= WM_KEYLAST)) {
         DBG_OUTSTR(TEXT("用户正在使用窗口管理器切换窗口，暂停拦截\n"));
         g_UserAction = true;
     }
+    // Window activated
     if (uMsg == WM_ACTIVATE && wParam != WA_INACTIVE)
     {
         g_UserAction = false;
@@ -112,7 +114,7 @@ LRESULT CALLBACK HookedWndProc(
             (uMsg == WM_NCACTIVATE && lParam == 0 && wParam == 0) ||
             (uMsg == WM_SIZE && wParam == SIZE_MINIMIZED && lParam == 0) ||
             uMsg == WM_KILLFOCUS) {
-            DBG_OUTSTR(TEXT("CS2 即将失去焦点，阻止最小化！\n"));
+            DBG_OUTSTR(TEXT("即将失去焦点，阻止最小化！\n"));
 
             return 0; // Intercept
         }
@@ -269,6 +271,7 @@ BOOL InstallHook(const wchar_t* targetProcess) {
 
     if (!targetHwnd) {
         DBG_OUTSTR(TEXT("未找到目标窗口！\n"));
+        DBG_OUTSTR(targetProcess);
         return FALSE;
     }
 
@@ -309,15 +312,24 @@ void Unload() {
         CloseHandle(hThread);
 }
 
-BOOL APIENTRY DllMain(HMODULE hModule,
+extern "C" __declspec(dllexport) void Initialize(void* pData)
+{
+}
+
+extern "C" __declspec(dllexport)
+BOOL APIENTRY DllMain(
+    HMODULE hModule,
     DWORD  ul_reason_for_call,
     LPVOID lpReserved
 ) {
     switch (ul_reason_for_call) {
+    case 11: // PID
+        g_pid = (DWORD)lpReserved;
+        break;
     case DLL_PROCESS_ATTACH:
         g_hModule = hModule;
 
-        if (!InstallHook(TEXT("cs2.exe")))
+        if (!InstallHook(GetProcessName(g_pid).c_str()))
         {
             // Uninstall module if hook installation fails
             MessageBox(NULL, TEXT("Failed to install hook."), TEXT("DYT_Module"), MB_OK | MB_ICONERROR);
